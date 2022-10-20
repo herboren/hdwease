@@ -5,13 +5,15 @@ using System.IO;
 using Excel = Microsoft.Office.Interop.Excel;
 using Newtonsoft.Json;
 
-
 namespace hddeserializer
 {
     internal class Program
     {
-        public static string jsonFilea = @"C:\Users\Daddy\Desktop\Work HelpDesk\Modifiable\Separated\productInfos.json";
-
+        public static string jsonFilea = "";
+        /// <summary>
+        /// Deserialize JSON stack retrieved from HD App
+        /// Formate then dump to XLS for future use.
+        /// </summary>
         static void Main()
         {
             var excel = new Excel.Application();
@@ -37,8 +39,7 @@ namespace hddeserializer
 
             int _row = 2;
             foreach (var item in productInfos)
-            {
-                
+            {                
                 worksheet.Cells[_row++, "A"].Value = item.ProductName;
                 worksheet.Cells[_row,   "B"].Value = item.Description;
                 worksheet.Cells[_row,   "C"].Value = item.ProductID;
@@ -48,7 +49,7 @@ namespace hddeserializer
                 Console.SetCursorPosition(0, 0);
             }
 
-            excel.Application.ActiveWorkbook.SaveAs(@"C:\Users\Daddy\repos\hddeserializer\bin\Debug\hdStackDeSerialized.xls", Excel.XlFileFormat.xlWorkbookDefault, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+            excel.Application.ActiveWorkbook.SaveAs(@"C:\Users\user\repos\hddeserializer\bin\Debug\hdStackDeSerialized.xls", Excel.XlFileFormat.xlWorkbookDefault, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
             excel.Application.ActiveWorkbook.Close();
             Console.ReadLine();
         }
@@ -60,12 +61,12 @@ namespace hddeserializer
 
         public static DataTable GetDeserializeNullCheck(string jsonfile)
         { 
-
             string[] nullProduct = new string[] { "name", "description", "productID", "keyWords" };
 
             // Is file there?
             if (!File.Exists(jsonfile))
                 throw new IOException("File not found, ensure file is present and try again.");
+
             else
             {
                 string json = File.ReadAllText(jsonfile);
