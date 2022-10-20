@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Excel = Microsoft.Office.Interop.Excel;
 using Newtonsoft.Json;
+
 
 namespace hddeserializer
 {
     internal class Program
     {
         public static string jsonFilea = @"C:\Users\Daddy\Desktop\Work HelpDesk\Modifiable\Separated\productInfos.json";
-        // public static string jsonFileb = @"C:\Users\Daddy\Desktop\Work HelpDesk\Modifiable\Separated\issueInfos.json";
-        // public static string jsonFilec = @"C:\Users\Daddy\Desktop\Work HelpDesk\Modifiable\Separated\categoyInfos.json";
 
         static void Main()
         {
+            var excel = new Excel.Application();
+            excel.Visible = false;
+            excel.Workbooks.Add();
+            Excel._Worksheet worksheet = excel.ActiveSheet as Excel.Worksheet;
+
+            object misValue = System.Reflection.Missing.Value;            
+
             List<ProductInfos> productInfos = new List<ProductInfos>();
-            List<IssueInfos> issueInfos = new List<IssueInfos>();
-            List<CategoryInfos> categoryInfos = new List<CategoryInfos>();
 
             DataTable dt = GetDeserializeNullCheck(jsonFilea);
 
@@ -29,22 +30,26 @@ namespace hddeserializer
                 productInfos.Add(new ProductInfos(row["name"].ToString(), row["description"].ToString(), Convert.ToInt32(row["productID"]), row["keyWords"].ToString()));
             }
 
-            /*foreach (DataRow row in dt.Rows)
-            { 
-                issueInfos.Add(new IssueInfos(Convert.ToInt32(row["issueId"]), row["name"].ToString(), row["description"].ToString()));
-            }
+            worksheet.Cells[1, "A"].Value = "Name";
+            worksheet.Cells[1, "B"].Value = "Description";
+            worksheet.Cells[1, "C"].Value = "ID";
+            worksheet.Cells[1, "D"].Value = "Keywords";
 
-            foreach (DataRow row in dt.Rows)
-            {
-                categoryInfos.Add(new CategoryInfos(Convert.ToInt32(row["productID"]), Convert.ToInt32(row["categoryId"]), Convert.ToInt32(row["issueId"]), Convert.ToInt32(row["requestTypeID"])));
-            }
-            */
-
-            // Validate data
+            int _row = 2;
             foreach (var item in productInfos)
-            {                
-                Console.WriteLine($"\nName: {item.ProductName}\nDescription: {item.Description}\nID: {item.ProductID}\nKeywords: {item.Keywords}");
+            {
+                
+                worksheet.Cells[_row++, "A"].Value = item.ProductName;
+                worksheet.Cells[_row,   "B"].Value = item.Description;
+                worksheet.Cells[_row,   "C"].Value = item.ProductID;
+                worksheet.Cells[_row,   "D"].Value = item.Keywords;
+
+                Console.WriteLine($"Adding:\nName: {item.ProductName}\nDescription: {item.Description}\nID: {item.ProductID}\nKeywords: {item.Keywords}");
+                Console.SetCursorPosition(0, 0);
             }
+
+            excel.Application.ActiveWorkbook.SaveAs(@"C:\Users\Daddy\repos\hddeserializer\bin\Debug\hdStackDeSerialized.xls", Excel.XlFileFormat.xlWorkbookDefault, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+            excel.Application.ActiveWorkbook.Close();
             Console.ReadLine();
         }
 
@@ -57,8 +62,6 @@ namespace hddeserializer
         { 
 
             string[] nullProduct = new string[] { "name", "description", "productID", "keyWords" };
-            // string[] nullIssue = new string[] { "issueID", "name", "description" };
-            // string[] nullCategory = new string[] { "description", "productID", "issueId", "categoryID", "requestTypeID" };
 
             // Is file there?
             if (!File.Exists(jsonfile))
@@ -83,13 +86,9 @@ namespace hddeserializer
                     }
                 }
 
-
                 // Return valid table data.
                 return table;
             }
-        }
-        // productInfos.Add(new ProductInfos(row["name"].ToString(), row["description"].ToString(), Convert.ToInt32(row["productID"]), row["keyWords"].ToString()));
-
-        
+        }       
     }
 }
